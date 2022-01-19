@@ -6,14 +6,19 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>LANT</title>
     <script>
+
         function uploadFiles() {
+            let progress = document.getElementById("progress")
             let filePicker = document.getElementById("filePicker");
             let files = filePicker.files
             let xhr = new XMLHttpRequest();
             let formData = new FormData();
 
-            xhr.onprogress = function(e){
-
+            xhr.upload.onprogress = function(e){
+                console.log(e.loaded,e.total)
+                // progress.max=100
+                progress.value = (e.loaded/e.total*100)
+                progress.innerText = (e.loaded/e.total*100).toFixed(2)
             }
 
             xhr.onreadystatechange = () => {
@@ -36,6 +41,11 @@
 <p>Hello {{.}}</p>
 <input id="filePicker" type="file" multiple="multiple">
 <button onclick="uploadFiles()">上传</button>
+<div>
+    <label for="file">File progress:</label>
+
+    <progress id="progress" max="100" value="0"> 0% </progress>
+</div>
 </body>
 <script>
 
