@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>LANT</title>
+    <script>
+        function uploadFiles() {
+            let filePicker = document.getElementById("filePicker");
+            let files = filePicker.files
+            let xhr = new XMLHttpRequest();
+            let formData = new FormData();
+
+            xhr.onprogress = function(e){
+
+            }
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText);
+                    alert("上传成功！！")
+                }
+            };
+
+            xhr.open("POST", "http://{{.}}/upload", true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            for (let i = 0; i < files.length; i++) {
+                formData.append(files[i].name, files[i])
+            }
+            xhr.send(formData);
+        }
+    </script>
+</head>
+<body>
+<p>Hello {{.}}</p>
+<input id="filePicker" type="file" multiple="multiple">
+<button onclick="uploadFiles()">上传</button>
+</body>
+<script>
+
+
+    let filePicker = document.getElementById("filePicker")
+    filePicker.onchange = function (e) {
+        let files = e.target.files
+        console.log(files)
+        // uploadFiles(files)
+    }
+</script>
+</html>
