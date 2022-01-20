@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,6 +19,32 @@ type file struct {
 	File os.File
 }
 
+// 获取本机网卡IP
+func getLocalIP() (ipv4 string, err error) {
+	var (
+		addrs   []net.Addr
+		addr    net.Addr
+		ipNet   *net.IPNet // IP地址
+		isIpNet bool
+	)
+	// 获取所有网卡
+	if addrs, err = net.InterfaceAddrs(); err != nil {
+		return
+	}
+	// 取第一个非lo的网卡IP
+	for _, addr = range addrs {
+		// 这个网络地址是IP地址: ipv4, ipv6
+		if ipNet, isIpNet = addr.(*net.IPNet); isIpNet && !ipNet.IP.IsLoopback() {
+			// 跳过IPV6
+			if ipNet.IP.To4() != nil {
+				ipv4 = ipNet.IP.String() // 192.168.1.1
+				return
+			}
+		}
+	}
+
+	return
+}
 func openBrowser(url string) {
 	var err error
 
@@ -92,7 +119,18 @@ func download(writer http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	//openBrowser("http://192.168.124.2:9876")
+
+	dir, er := filepath.Abs(filepath.Dir(os.Args[0]))
+	if er != nil {
+		log.Fatal(er)
+	}
+	if _, err := os.Stat(dir + "/public/"); os.IsNotExist(err) {
+		err = os.Mkdir(dir+"/public/", 0777)
+		// TODO: handle error
+	}
+
+	ip, _ := getLocalIP()
+	openBrowser("http://" + ip + ":9876")
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 
