@@ -5,12 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>LANT</title>
-
+    <style>
+        .attachments {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        a {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+            margin: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        img {
+            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
 </head>
 <body>
-<p>download {{.}}</p>
-<input id="filePicker" type="file" multiple="multiple">
-<button onclick="uploadFiles()">上传</button>
+<div class="attachments">
+    {{ range $val := .}}
+        <a href="#">
+            <img src="/public/{{$val.FileName}}" alt="">
+        </a>
+    {{ end }}
+</div>
+
 </body>
 
 </html>

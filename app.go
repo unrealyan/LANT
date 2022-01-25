@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 )
@@ -100,6 +101,11 @@ func apiUpload(writer http.ResponseWriter, r *http.Request) {
 
 }
 
+type Attachments struct {
+	FileName string      `json:"file_name"`
+	FileData interface{} `json:"file_data"`
+}
+
 func download(writer http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("web/download.tmpl")
 	if err != nil {
@@ -112,12 +118,16 @@ func download(writer http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
+	attachments := make([]Attachments, 0)
+
 	for _, file := range files {
 		fmt.Println(file.Name(), file.IsDir())
+		attachment := Attachments{FileName: file.Name(), FileData: file}
+		attachments = append(attachments, attachment)
 	}
 
-	h := r.Host
-	tmpl.Execute(writer, h)
+	//h := r.Host
+	tmpl.Execute(writer, attachments)
 }
 
 func Upload(writer http.ResponseWriter, r *http.Request) {
@@ -183,6 +193,23 @@ func SendJqueryJs(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func HandlePublic(w http.ResponseWriter, r *http.Request) {
+	exPath, err := getCurrentAbPath()
+	if err != nil {
+		log.Println(err)
+	}
+	data, err := ioutil.ReadFile(exPath + r.RequestURI)
+	if err != nil {
+		http.Error(w, "Couldn't read file", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println(exPath)
+	fmt.Println("uri", r.RequestURI)
+	//w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+	w.Write(data)
+}
+
 func main() {
 
 	//dir, er := filepath.Abs(filepath.Dir(os.Args[0]))
@@ -198,6 +225,11 @@ func main() {
 	openBrowser("http://" + ip + ":9876")
 
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+
+		if reg, _ := regexp.MatchString("/public/", request.RequestURI); reg {
+			HandlePublic(writer, request)
+			return
+		}
 
 		//path, err := os.Executable()
 		exPath, err := getCurrentAbPath()
